@@ -367,6 +367,15 @@ textarea {
     font-weight: 400;
 }
 
+#modalSubtext {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    margin-top: -16px;
+}
+
 #modalOptions {
     display: flex;
     flex-direction: column;
