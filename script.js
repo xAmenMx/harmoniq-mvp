@@ -205,6 +205,8 @@ Note length:
 
 Tone: clear and informative. Never preachy, never overly warm, never overwhelming.
 
+Language: Detect the language of the student's notes and respond in that same language. If the notes are in Arabic, respond in Arabic. If in English, respond in English. Match the language of the notes throughout — summary, flashcards, questions, and grounding message.
+
 CRITICAL: Your response must be valid, parseable JSON only. No extra braces, no missing commas, no trailing commas. Double-check your JSON structure before responding.`;
 
     // ----------------------------------------
