@@ -24,6 +24,18 @@ const toggle = document.getElementById('themeToggle');
 
 
 // ============================================
+// API URL
+// Points to localhost when developing locally
+// Points to the Vercel serverless function
+// when deployed — works for all users
+// ============================================
+
+const apiUrl = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000/generate'
+    : '/api/generate';
+
+
+// ============================================
 // THEME TOGGLE
 // Simple dark/light mode toggle for better UX
 // Toggles a data-theme attribute on the root element
@@ -139,7 +151,7 @@ stateBtns.forEach(btn => {
 // Async function that:
 // 1. Shows a loading message
 // 2. Builds the system prompt and user message
-// 3. Sends both to the Node.js backend
+// 3. Sends both to the backend
 // 4. Receives the JSON response
 // 5. Passes it to renderOutput() for display
 // ============================================
@@ -208,14 +220,12 @@ Notes: ${notes.value}`;
 
     // ----------------------------------------
     // API CALL
-    // Sends the system prompt and user message
-    // to our Node.js backend at localhost:3000
-    // The backend adds the API key and forwards
-    // the request to Anthropic, then returns
-    // the parsed JSON response
+    // Uses apiUrl defined at the top —
+    // localhost for local dev, /api/generate
+    // for the deployed Vercel version
     // ----------------------------------------
     try {
-        const response = await fetch('http://localhost:3000/generate', {
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ systemPrompt, userMessage })
@@ -371,7 +381,6 @@ function renderOutput(data) {
     // Sends data to Formspree via POST
     // Replaces form with a thank you message on success
     // ----------------------------------------
-    // Feedback button toggle logic
     const feedbackBtns = document.querySelectorAll('.feedback-btn');
     const selections = { level: null, checkin: null, readiness: null };
 
