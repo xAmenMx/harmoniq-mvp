@@ -1,0 +1,698 @@
+/* ============================================
+   HARMONIQ - STYLE.CSS
+   Warm minimalism. Calm, unhurried, human.
+   ============================================ */
+
+
+/* ============================================
+   FONTS
+   Lora: warm serif for headings
+   DM Sans: clean, friendly sans for body text
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+
+/* ============================================
+   CSS VARIABLES — LIGHT MODE (default)
+   ============================================ */
+
+:root {
+    --bg:             #f7f4ef;
+    --surface:        #ffffff;
+    --border:         #e4ddd3;
+    --text-primary:   #2c2825;
+    --text-secondary: #7a6f66;
+    --accent:         #6b8f71;
+    --accent-hover:   #5a7d60;
+    --accent-light:   #e8f0e9;
+    --accent-shadow:  rgba(107, 143, 113, 0.3);
+
+    --ready:          #6b8f71;
+    --ready-light:    #e8f0e9;
+    --distracted:     #c4924a;
+    --distracted-light: #f7ede0;
+    --distracted-text:  #8a6030;
+    --overwhelmed:    #7a90b0;
+    --overwhelmed-light: #e8eef5;
+
+    --error-color:    #b85c4a;
+    --radius:         12px;
+    --radius-sm:      8px;
+    --shadow:         0 2px 16px rgba(44, 40, 37, 0.07);
+    --shadow-md:      0 4px 32px rgba(44, 40, 37, 0.12);
+    --overlay-bg:     rgba(44, 40, 37, 0.4);
+}
+
+
+/* ============================================
+   CSS VARIABLES — DARK MODE
+   Same warm personality, just inverted
+   ============================================ */
+
+[data-theme="dark"] {
+    --bg:             #1e1b18;
+    --surface:        #28231f;
+    --border:         #3a332c;
+    --text-primary:   #f0ebe4;
+    --text-secondary: #9e9188;
+    --accent:         #7aaa81;
+    --accent-hover:   #8dba94;
+    --accent-light:   #1e2e20;
+    --accent-shadow:  rgba(122, 170, 129, 0.25);
+
+    --ready:          #7aaa81;
+    --ready-light:    #1e2e20;
+    --distracted:     #d4a45a;
+    --distracted-light: #2e2010;
+    --distracted-text:  #d4a45a;
+    --overwhelmed:    #8aa0be;
+    --overwhelmed-light: #1a2030;
+
+    --error-color:    #d4745e;
+    --shadow:         0 2px 16px rgba(0, 0, 0, 0.25);
+    --shadow-md:      0 4px 32px rgba(0, 0, 0, 0.4);
+    --overlay-bg:     rgba(0, 0, 0, 0.6);
+}
+
+
+/* ============================================
+   BASE RESET & BODY
+   ============================================ */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+    min-height: 100vh;
+    padding: 48px 24px 80px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+
+#container {
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+
+/* ============================================
+   HEADER + LOGO + DARK MODE TOGGLE ROW
+   ============================================ */
+
+/* ============================================
+   LOGO
+   ============================================*/
+
+#logo {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    transition: opacity 0.2s ease;
+}
+
+#logo:hover {
+    opacity: 0.85;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+h1 {
+    font-family: 'Lora', serif;
+    font-weight: 600;
+    font-size: 2.6rem;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.tagline {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+    margin-bottom: 48px;
+    font-style: italic;
+}
+
+
+/* ============================================
+   DARK MODE TOGGLE BUTTON
+   ============================================ */
+
+#themeToggle {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    margin-top: 8px;
+}
+
+#themeToggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+
+/* ============================================
+   FORM
+   ============================================ */
+
+#harmoniqForm {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+input[type="text"],
+select,
+textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    padding: 12px 16px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+input[type="text"]:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(107, 143, 113, 0.12);
+}
+
+input[type="text"]::placeholder,
+textarea::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.5;
+    font-weight: 300;
+}
+
+/* Custom select arrow */
+select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a6f66' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 180px;
+    line-height: 1.6;
+}
+
+#wordCount {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: right;
+    margin-top: 4px;
+    transition: color 0.2s ease;
+}
+
+
+/* ============================================
+   ERROR MESSAGE
+   ============================================ */
+
+#formError {
+    font-size: 0.875rem;
+    color: var(--error-color);
+    min-height: 20px;
+    font-weight: 400;
+}
+
+
+/* ============================================
+   GENERATE BUTTON
+   ============================================ */
+
+#generateBtn {
+    align-self: flex-start;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #ffffff;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 13px 28px;
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    letter-spacing: 0.01em;
+}
+
+#generateBtn:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 4px 12px var(--accent-shadow);
+    transform: translateY(-1px);
+}
+
+#generateBtn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+
+/* ============================================
+   MODAL OVERLAY
+   ============================================ */
+
+#modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay-bg);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+
+/* ============================================
+   MODAL CARD
+   ============================================ */
+
+#modal {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    max-width: 420px;
+    width: 100%;
+    padding: 40px 36px;
+    animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+#modalMessage {
+    font-family: 'Lora', serif;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 28px;
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+#modalOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Base state button */
+.stateBtn {
+    border: 1.5px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 13px 20px;
+    text-align: left;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+/* Ready — sage green */
+.stateBtn[data-state="Ready"] {
+    background: var(--ready-light);
+    border-color: var(--ready);
+    color: var(--ready);
+}
+.stateBtn[data-state="Ready"]:hover {
+    background: var(--ready);
+    color: #ffffff;
+    transform: translateX(4px);
+}
+
+/* Distracted — warm amber */
+.stateBtn[data-state="Distracted"] {
+    background: var(--distracted-light);
+    border-color: var(--distracted);
+    color: var(--distracted);
+}
+.stateBtn[data-state="Distracted"]:hover {
+    background: var(--distracted);
+    color: #ffffff;
+    transform: translateX(4px);
+}
+
+/* Overwhelmed — dusty blue */
+.stateBtn[data-state="Overwhelmed"] {
+    background: var(--overwhelmed-light);
+    border-color: var(--overwhelmed);
+    color: var(--overwhelmed);
+}
+.stateBtn[data-state="Overwhelmed"]:hover {
+    background: var(--overwhelmed);
+    color: #ffffff;
+    transform: translateX(4px);
+}
+
+
+/* ============================================
+   OUTPUT SECTION
+   ============================================ */
+
+#output {
+    margin-top: 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    animation: fadeIn 0.4s ease;
+}
+
+
+/* ============================================
+   SHARED SECTION HEADING STYLE
+   ============================================ */
+
+#output h2 {
+    font-family: 'Lora', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+
+/* ============================================
+   GROUNDING MESSAGE
+   ============================================ */
+
+#groundingSection {
+    background: var(--distracted-light);
+    border-left: 3px solid var(--distracted);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 16px 20px;
+    font-style: italic;
+    color: var(--distracted-text);
+    font-size: 0.95rem;
+    line-height: 1.7;
+}
+
+
+/* ============================================
+   SUMMARY SECTION
+   ============================================ */
+
+#summarySection p {
+    font-size: 0.975rem;
+    line-height: 1.8;
+    color: var(--text-primary);
+}
+
+
+/* ============================================
+   FLASHCARDS SECTION
+   ============================================ */
+
+.flashcard {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.flashcard:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.cardNumber {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.cardFront {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.cardBack {
+    font-size: 0.925rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+
+/* ============================================
+   QUESTIONS SECTION
+   ============================================ */
+
+#questionsSection p {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.6;
+}
+
+#questionsSection p:last-child {
+    border-bottom: none;
+}
+
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+#output > p {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.95rem;
+}
+
+/* ============================================
+   FEEDBACK SECTION
+   ============================================ */
+
+#feedbackSection {
+    border-top: 1px solid var(--border);
+    padding-top: 40px;
+}
+
+.feedback-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+
+.feedback-label {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.feedback-optional {
+    color: var(--text-secondary);
+    font-weight: 300;
+    font-size: 0.85rem;
+}
+
+.feedback-btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.feedback-btn {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 9px 18px;
+    transition: all 0.2s ease;
+}
+
+.feedback-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.feedback-btn-selected {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.feedback-textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    padding: 12px 16px;
+    resize: vertical;
+    min-height: 90px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.feedback-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(107, 143, 113, 0.12);
+}
+
+.feedback-textarea::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+
+#feedbackSubmitBtn {
+    background: transparent;
+    border: 1.5px solid var(--accent);
+    border-radius: var(--radius-sm);
+    color: var(--accent);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 10px 24px;
+    transition: all 0.2s ease;
+}
+
+#feedbackSubmitBtn:hover {
+    background: var(--accent);
+    color: #ffffff;
+}
+
+#feedbackSubmitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.feedback-error {
+    font-size: 0.875rem;
+    color: var(--error-color);
+    margin-bottom: 8px;
+}
+
+#feedbackThanks {
+    padding: 16px 0;
+}
+
+#feedbackThanks p {
+    font-style: italic;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 480px) {
+    body {
+        padding: 32px 18px 60px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    #modal {
+        padding: 28px 24px;
+    }
+
+    #generateBtn {
+        width: 100%;
+        text-align: center;
+    }
+}

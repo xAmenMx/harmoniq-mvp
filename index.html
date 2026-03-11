@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmoniq</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header-row">
+    <div class="brand">
+        <img src="harmoniq-logo.png" alt="Harmoniq logo" id="logo">
+        <h1>Harmoniq</h1>
+    </div>
+    <button type="button" id="themeToggle">Dark mode</button>
+</div>
+<p class="tagline">Study smarter, feel better.</p>
+
+        <form id="harmoniqForm">
+            <div class="form-group">
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" placeholder="e.g. Introduction to Databases">
+            </div>
+
+            <div class="form-group">
+                <label for="academicLevel">Academic Level:</label>
+                <select id="academicLevel">
+                    <option value="">Select level</option>
+                    <option value="Secondary">Secondary</option>
+                    <option value="Pre-university">Pre-university</option>
+                    <option value="Undergraduate">Undergraduate</option>
+                    <option value="Postgraduate">Postgraduate</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="prepLevel">Preparation Level:</label>
+                <select id="prepLevel">
+                    <option value="">Select level</option>
+                    <option value="First time seeing it">First time seeing it</option>
+                    <option value="Read once">Read once</option>
+                    <option value="Read a few times">Read a few times</option>
+                    <option value="Very familiar">Very familiar</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Your Notes:</label>
+                <textarea id="notes" rows="10" placeholder="Paste your notes here (maximum 3,000 words)"></textarea>
+                <p id="wordCount">0 / 3,000 words</p>
+            </div>
+
+            <p id="formError"></p>
+            <button type="button" id="generateBtn">Generate Study Materials</button>
+        </form>
+
+        <div id="output" style="display:none;">
+            <div id="grounding"></div>
+            <div id="summary"></div>
+            <div id="flashcards"></div>
+            <div id="questions"></div>
+        </div>
+    </div>
+
+    <div id="modalOverlay" style="display:none;">
+    <div id="modal">
+        <p id="modalMessage">Before we begin — how are you feeling right now?</p>
+        <div id="modalOptions">
+            <button type="button" class="stateBtn" data-state="Ready">Ready</button>
+            <button type="button" class="stateBtn" data-state="Distracted">A bit distracted</button>
+            <button type="button" class="stateBtn" data-state="Overwhelmed">Overwhelmed</button>
+        </div>
+    </div>
+</div>
+    <script src="script.js"></script>
+</body>
+</html>
