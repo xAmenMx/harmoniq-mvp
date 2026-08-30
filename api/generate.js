@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
 
         // Call the Anthropic API
         const message = await client.messages.create({
-            model: 'claude-sonnet-4-20250514',
+            model: 'claude-sonnet-4-6',
             max_tokens: 1500,
             system: systemPrompt,
             messages: [
