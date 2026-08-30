@@ -6,8 +6,6 @@
 
 /* ============================================
    FONTS
-   Lora: warm serif for headings
-   DM Sans: clean, friendly sans for body text
    ============================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
@@ -47,7 +45,6 @@
 
 /* ============================================
    CSS VARIABLES — DARK MODE
-   Same warm personality, just inverted
    ============================================ */
 
 [data-theme="dark"] {
@@ -117,10 +114,6 @@ body {
    HEADER + LOGO + DARK MODE TOGGLE ROW
    ============================================ */
 
-/* ============================================
-   LOGO
-   ============================================*/
-
 #logo {
     width: 68px;
     height: 68px;
@@ -137,10 +130,6 @@ body {
     align-items: center;
     gap: 16px;
 }
-
-/* ============================================
-   HEADER
-   ============================================ */
 
 .header-row {
     display: flex;
@@ -217,6 +206,7 @@ label {
 }
 
 input[type="text"],
+input[type="date"],
 select,
 textarea {
     width: 100%;
@@ -235,6 +225,7 @@ textarea {
 }
 
 input[type="text"]:focus,
+input[type="date"]:focus,
 select:focus,
 textarea:focus {
     border-color: var(--accent);
@@ -248,7 +239,6 @@ textarea::placeholder {
     font-weight: 300;
 }
 
-/* Custom select arrow */
 select {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a6f66' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -269,6 +259,41 @@ textarea {
     text-align: right;
     margin-top: 4px;
     transition: color 0.2s ease;
+}
+
+
+/* ============================================
+   SESSION TYPE TOGGLE
+   ============================================ */
+
+.session-type-group {
+    display: flex;
+    gap: 10px;
+}
+
+.sessionTypeBtn {
+    flex: 1;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 12px 16px;
+    transition: all 0.2s ease;
+}
+
+.sessionTypeBtn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.sessionTypeBtn.selected {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 
@@ -362,7 +387,7 @@ textarea {
     font-family: 'Lora', serif;
     font-size: 1.2rem;
     color: var(--text-primary);
-    margin-bottom: 28px;
+    margin-bottom: 12px;
     line-height: 1.5;
     font-weight: 400;
 }
@@ -373,7 +398,6 @@ textarea {
     font-weight: 300;
     line-height: 1.6;
     margin-bottom: 24px;
-    margin-top: -16px;
 }
 
 #modalOptions {
@@ -382,7 +406,6 @@ textarea {
     gap: 10px;
 }
 
-/* Base state button */
 .stateBtn {
     border: 1.5px solid transparent;
     border-radius: var(--radius-sm);
@@ -396,7 +419,6 @@ textarea {
     width: 100%;
 }
 
-/* Ready — sage green */
 .stateBtn[data-state="Ready"] {
     background: var(--ready-light);
     border-color: var(--ready);
@@ -408,7 +430,6 @@ textarea {
     transform: translateX(4px);
 }
 
-/* Distracted — warm amber */
 .stateBtn[data-state="Distracted"] {
     background: var(--distracted-light);
     border-color: var(--distracted);
@@ -420,7 +441,6 @@ textarea {
     transform: translateX(4px);
 }
 
-/* Overwhelmed — dusty blue */
 .stateBtn[data-state="Overwhelmed"] {
     background: var(--overwhelmed-light);
     border-color: var(--overwhelmed);
@@ -444,11 +464,6 @@ textarea {
     gap: 40px;
     animation: fadeIn 0.4s ease;
 }
-
-
-/* ============================================
-   SHARED SECTION HEADING STYLE
-   ============================================ */
 
 #output h2 {
     font-family: 'Lora', serif;
@@ -533,7 +548,7 @@ textarea {
 
 
 /* ============================================
-   QUESTIONS SECTION
+   QUESTIONS SECTION (Normal session type)
    ============================================ */
 
 #questionsSection p {
@@ -550,14 +565,150 @@ textarea {
 
 
 /* ============================================
-   LOADING STATE
+   QUIZ SECTION (Exam session type)
    ============================================ */
 
-#output > p {
-    color: var(--text-secondary);
-    font-style: italic;
-    font-size: 0.95rem;
+.quiz-question {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
 }
+
+.quiz-question-text {
+    font-size: 0.975rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 14px;
+}
+
+.quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quiz-option {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    padding: 10px 16px;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.quiz-option:hover:not(:disabled) {
+    border-color: var(--accent);
+}
+
+.quiz-option-selected {
+    border-color: var(--accent);
+    background: var(--accent-light);
+}
+
+.quiz-option-correct {
+    border-color: var(--accent) !important;
+    background: var(--accent-light) !important;
+    color: var(--accent) !important;
+    font-weight: 500;
+}
+
+.quiz-option-incorrect {
+    border-color: var(--error-color) !important;
+    background: var(--distracted-light) !important;
+    color: var(--error-color) !important;
+}
+
+.quiz-option:disabled {
+    cursor: default;
+    opacity: 0.9;
+}
+
+#submitQuizBtn {
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #ffffff;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 12px 24px;
+    transition: background 0.2s ease;
+}
+
+#submitQuizBtn:hover {
+    background: var(--accent-hover);
+}
+
+
+/* ============================================
+   QUIZ RESULTS + WEAK AREAS
+   ============================================ */
+
+#quizResults {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+#quizResults > p {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+#weakAreas {
+    margin-top: 14px;
+    margin-bottom: 6px;
+}
+
+#weakAreas .label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: block;
+}
+
+#weakAreas ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#weakAreas li {
+    background: var(--distracted-light);
+    color: var(--distracted-text);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+
+/* ============================================
+   COMEBACK MESSAGE (both session types)
+   ============================================ */
+
+#comebackSection {
+    background: var(--overwhelmed-light);
+    border-left: 3px solid var(--overwhelmed);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 14px 20px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-top: 20px;
+}
+
 
 /* ============================================
    FEEDBACK SECTION
@@ -683,6 +834,18 @@ textarea {
     font-size: 0.95rem;
 }
 
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+#output > p {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.95rem;
+}
+
+
 /* ============================================
    RESPONSIVE
    ============================================ */
@@ -703,5 +866,9 @@ textarea {
     #generateBtn {
         width: 100%;
         text-align: center;
+    }
+
+    .session-type-group {
+        flex-direction: column;
     }
 }

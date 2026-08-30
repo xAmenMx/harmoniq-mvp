@@ -1,33 +1,34 @@
 // ============================================
 // HARMONIQ - SCRIPT.JS
 // Handles form validation, modal interaction,
-// API communication, and output rendering
+// API communication, output rendering,
+// session types (Normal / Exam), daily limits,
+// and the interactive exam quiz
 // ============================================
 
 
 // ============================================
 // ELEMENT SELECTION
-// Grabbing all the elements we need from the DOM
 // ============================================
 
-const subject = document.querySelector('#subject');             // Subject input field
-const academicLevel = document.querySelector('#academicLevel'); // Academic level dropdown
-const prepLevel = document.querySelector('#prepLevel');         // Preparation level dropdown
-const notes = document.querySelector('#notes');                 // Notes textarea
-const wordCount = document.querySelector('#wordCount');         // Word count display
-const generateBtn = document.querySelector('#generateBtn');     // Generate button
-const formError = document.querySelector('#formError');         // Inline error message
-const modalOverlay = document.querySelector('#modalOverlay');   // Modal background overlay
-const stateBtns = document.querySelectorAll('.stateBtn');       // All three emotional state buttons
-const output = document.querySelector('#output');               // Output section container
+const subject = document.querySelector('#subject');
+const academicLevel = document.querySelector('#academicLevel');
+const prepLevel = document.querySelector('#prepLevel');
+const examDateGroup = document.querySelector('#examDateGroup');
+const examDate = document.querySelector('#examDate');
+const notes = document.querySelector('#notes');
+const wordCount = document.querySelector('#wordCount');
+const generateBtn = document.querySelector('#generateBtn');
+const formError = document.querySelector('#formError');
+const modalOverlay = document.querySelector('#modalOverlay');
+const stateBtns = document.querySelectorAll('.stateBtn');
+const output = document.querySelector('#output');
 const toggle = document.getElementById('themeToggle');
+const sessionTypeBtns = document.querySelectorAll('.sessionTypeBtn');
 
 
 // ============================================
 // API URL
-// Points to localhost when developing locally
-// Points to the Vercel serverless function
-// when deployed — works for all users
 // ============================================
 
 const apiUrl = window.location.hostname === 'localhost'
@@ -37,9 +38,6 @@ const apiUrl = window.location.hostname === 'localhost'
 
 // ============================================
 // THEME TOGGLE
-// Simple dark/light mode toggle for better UX
-// Toggles a data-theme attribute on the root element
-// and changes button text accordingly
 // ============================================
 
 toggle.addEventListener('click', () => {
@@ -50,26 +48,84 @@ toggle.addEventListener('click', () => {
 
 
 // Stores the emotional state selected in the modal
-// Starts empty, gets filled when user clicks a state button
 let emotionalState = '';
+
+// Stores the current session type — 'normal' or 'exam'
+let sessionType = 'normal';
+
+
+// ============================================
+// SESSION TYPE TOGGLE
+// Switching to "Exam Prep" reveals the exam
+// date field. Switching back to "Normal Study"
+// hides it and clears any value entered.
+// ============================================
+
+sessionTypeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        sessionTypeBtns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        sessionType = btn.dataset.type;
+
+        if (sessionType === 'exam') {
+            examDateGroup.style.display = 'flex';
+        } else {
+            examDateGroup.style.display = 'none';
+            examDate.value = '';
+        }
+    });
+});
+
+
+// ============================================
+// DAILY FREE LIMIT
+// Free users get a fixed number of generations
+// per day. Tracked in localStorage keyed to
+// today's date, so it survives page reloads
+// but resets naturally the next day.
+// ============================================
+
+const DAILY_LIMIT = 2;
+
+// Returns today's date as a simple string, used as the storage key
+function getTodayString() {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+// Reads how many generations have been used today
+// Returns 0 if nothing is stored yet, or if the stored date isn't today
+function getUsageCount() {
+    let stored;
+    try {
+        stored = JSON.parse(localStorage.getItem('harmoniqUsage'));
+    } catch (e) {
+        stored = null;
+    }
+    if (!stored || stored.date !== getTodayString()) {
+        return 0;
+    }
+    return stored.count;
+}
+
+// Increments today's usage count by one
+function incrementUsageCount() {
+    const current = getUsageCount();
+    localStorage.setItem('harmoniqUsage', JSON.stringify({
+        date: getTodayString(),
+        count: current + 1
+    }));
+}
 
 
 // ============================================
 // WORD COUNT TRACKER
-// Updates the word count display every time
-// the user types in the notes textarea
-// Turns red if the user exceeds 3,000 words
 // ============================================
 
 notes.addEventListener('input', () => {
-    // If the textarea is empty, count is 0
-    // Otherwise split by whitespace to count words
     const words = notes.value.trim() === '' ? 0 : notes.value.trim().split(/\s+/).length;
-
-    // Update the display text
     wordCount.textContent = `${words} / 3,000 words`;
 
-    // Turn red if over the limit as a visual warning
     if (words > 3000) {
         wordCount.style.color = 'red';
     } else {
@@ -80,21 +136,19 @@ notes.addEventListener('input', () => {
 
 // ============================================
 // GENERATE BUTTON — VALIDATION + MODAL TRIGGER
-// When the user clicks Generate:
-// 1. Clear any previous error messages
-// 2. Validate all four form fields
-// 3. If valid, show the emotional state modal
 // ============================================
 
 generateBtn.addEventListener('click', () => {
-    // Clear any previous error message
     formError.textContent = '';
 
-    // Count words in the notes field for validation
+    // Check the daily free limit before anything else
+    if (getUsageCount() >= DAILY_LIMIT) {
+        formError.textContent = `You've used your ${DAILY_LIMIT} free sessions for today. Come back tomorrow for more.`;
+        return;
+    }
+
     const words = notes.value.trim() === '' ? 0 : notes.value.trim().split(/\s+/).length;
 
-    // Validate each field one by one
-    // Return early if any field fails — shows one error at a time
     if (subject.value.trim() === '') {
         formError.textContent = 'Please enter a subject.';
         return;
@@ -107,6 +161,10 @@ generateBtn.addEventListener('click', () => {
         formError.textContent = 'Please select a preparation level.';
         return;
     }
+    if (sessionType === 'exam' && examDate.value === '') {
+        formError.textContent = 'Please select your exam date.';
+        return;
+    }
     if (notes.value.trim() === '') {
         formError.textContent = 'Please paste your notes.';
         return;
@@ -116,61 +174,55 @@ generateBtn.addEventListener('click', () => {
         return;
     }
 
-    // All fields are valid — show the emotional state modal
-    // The modal is a popup asking how the student feels right now
     modalOverlay.style.display = 'flex';
 });
 
 
 // ============================================
 // EMOTIONAL STATE SELECTION
-// When the user clicks one of the three state
-// buttons in the modal:
-// 1. Store the selected state
-// 2. Close the modal
-// 3. Trigger the main generation function
 // ============================================
 
 stateBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-        // Store the state value from the button's data-state attribute
-        // e.g. "Ready", "Distracted", or "Overwhelmed"
         emotionalState = btn.dataset.state;
-
-        // Hide the modal
         modalOverlay.style.display = 'none';
-
-        // Start generating study materials
         generateMaterials();
     });
 });
 
 
 // ============================================
+// DAYS REMAINING HELPER
+// Calculates whole days between today and the
+// selected exam date. Used only in exam mode.
+// ============================================
+
+function calculateDaysRemaining(dateStr) {
+    const exam = new Date(dateStr);
+    const today = new Date();
+    exam.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const diffTime = exam - today;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+
+// ============================================
 // MAIN GENERATION FUNCTION
-// Async function that:
-// 1. Shows a loading message
-// 2. Builds the system prompt and user message
-// 3. Sends both to the backend
-// 4. Receives the JSON response
-// 5. Passes it to renderOutput() for display
 // ============================================
 
 async function generateMaterials() {
-    // Show the output section with a loading message
-    // while waiting for the API response
     output.style.display = 'block';
     output.innerHTML = '<p>Generating your study materials...</p>';
 
+    const daysRemaining = sessionType === 'exam' ? calculateDaysRemaining(examDate.value) : null;
+
     // ----------------------------------------
     // SYSTEM PROMPT
-    // The fixed instructions that tell the AI
-    // how to behave and what to generate
-    // This never changes between requests
     // ----------------------------------------
     const systemPrompt = `You are a study assistant for Harmoniq, a tool designed to help students learn effectively without feeling overwhelmed. Your job is to convert student notes into clear, concise study materials.
 
-Generate the following output in JSON format with four keys: "grounding", "summary", "flashcards", and "questions".
+Generate the following output in JSON format with five keys: "grounding", "summary", "flashcards", "questions", and "quiz".
 
 If the student's notes exceed 3,000 words, do not process them. Instead return a JSON object with a single key: "error" with the value: "Your notes are too long. Please paste the most relevant section, ideally under 3,000 words, and try again."
 
@@ -178,53 +230,59 @@ Rules:
 
 Academic level adjustment: Adjust vocabulary, depth of explanation, and question difficulty based on academic level.
 - Secondary: simple everyday language, avoid jargon, foundational explanations suitable for Grade 8-10 students.
-- Pre-university: more advanced than secondary, approaching undergraduate complexity but without assuming university level prior knowledge. Reduce jargon slightly but engage with more nuanced concepts than secondary level.
+- Pre-university: more advanced than secondary, approaching undergraduate complexity but without assuming university level prior knowledge.
 - Undergraduate: standard academic language, moderate complexity.
 - Postgraduate: technical language appropriate, assume stronger prior knowledge.
 
 Summary: Write 5-6 sentences covering only the most important concepts from the notes. If the student is overwhelmed, shorten to 3-4 sentences. Plain, simple language. Never verbose.
 
-Flashcards: Generate between 5-10 cards, each with a "front" and "back" key. Front is the concept. Back is a simple one to two sentence explanation. Adjust complexity of explanations to match academic level. If the student is overwhelmed, generate only 5 cards. If ready or distracted, generate the full range based on how much content the notes contain.
+Flashcards: Generate between 5-10 cards, each with a "front" and "back" key. If the student is overwhelmed, generate only 5 cards.
 
-Questions: Generate 3 practice questions as a simple array of strings. Each question is just the question text — no objects, no "type" keys, no extra fields. Example format: ["What is normalization?", "How does 2NF differ from 1NF?", "Why does 3NF remove transitive dependencies?"] Match type to preparation level:
+Session type: The student selects either "Normal" or "Exam" as their session type.
+- If session type is "Normal": populate the "questions" key following the Questions rules below. Leave "quiz" as an empty array.
+- If session type is "Exam": populate the "quiz" key following the Quiz rules below. Leave "questions" as an empty array.
+
+Questions (Normal session type only): Generate 3 practice questions as a simple array of strings. Each question is just the question text — no objects, no "type" keys. Match type to preparation level:
 - "First time seeing it" or "Read once": general recall questions — what, define, describe.
 - "Read a few times": mix of recall and Socratic questions.
 - "Very familiar": Socratic questions only — why, how, what if, what is the connection.
-- Adjust question complexity to match academic level.
 - If the student is overwhelmed: skip questions entirely, return an empty array.
+
+Quiz (Exam session type only): Generate multiple-choice quiz questions designed to reveal which concepts the student has and hasn't understood.
+- Each quiz question is an object with four keys: "concept" (a short 2-4 word label naming the topic being tested, ideally matching a flashcard front), "question" (the question text), "options" (an array of exactly 4 answer choices as strings), and "correctIndex" (the zero-based index of the correct option).
+- Generate 5 quiz questions normally, or 3 if the student is overwhelmed.
+- Cover a spread of concepts from the notes rather than repeating the same one.
+- Make incorrect options plausible, not obviously wrong, so the quiz genuinely tests understanding.
+- Adjust difficulty to match academic level.
 
 Emotional state adjustments:
 - Ready: deliver full output, empty grounding string.
-- Distracted: populate the grounding key with a calm, human two-sentence message. Vary the wording each time — never repeat the same message twice. Warm but brief. Acknowledge the scattered feeling without being preachy.
-- Overwhelmed: 5 flashcards, 3-4 sentence summary, empty questions array, empty grounding string.
+- Distracted: populate the grounding key with a calm, human two-sentence message. Vary the wording each time — never repeat the same message twice. Warm but brief.
+- Overwhelmed: 5 flashcards, 3-4 sentence summary, empty questions array, 3 quiz questions instead of 5, empty grounding string.
+
+${sessionType === 'exam' ? `Exam urgency: The student has ${daysRemaining} day(s) until their exam. Let this inform the tone and focus of the session without being alarming — fewer days remaining means the summary and flashcards should prioritise only the most essential concepts.` : ''}
 
 Note length:
 - If notes are very brief, work with what is given without padding or inventing content.
-- If notes are very long but under 3,000 words, identify and prioritise only the most repeated and emphasised concepts. Do not try to cover everything.
-- Do not introduce concepts not present in the notes, even if they seem related.
+- If notes are very long but under 3,000 words, identify and prioritise only the most repeated and emphasised concepts.
+- Do not introduce concepts not present in the notes.
 
 Tone: clear and informative. Never preachy, never overly warm, never overwhelming.
-
-Language: Detect the language of the student's notes and respond in that same language. If the notes are in Arabic, respond in Arabic. If in English, respond in English. Match the language of the notes throughout — summary, flashcards, questions, and grounding message.
 
 CRITICAL: Your response must be valid, parseable JSON only. No extra braces, no missing commas, no trailing commas. Double-check your JSON structure before responding.`;
 
     // ----------------------------------------
     // USER MESSAGE
-    // The dynamic part that changes each request
-    // Contains all five inputs from the student
     // ----------------------------------------
     const userMessage = `Subject: ${subject.value}
 Academic level: ${academicLevel.value}
 Preparation level: ${prepLevel.value}
 Current state: ${emotionalState}
+Session type: ${sessionType}${sessionType === 'exam' ? `\nDays until exam: ${daysRemaining}` : ''}
 Notes: ${notes.value}`;
 
     // ----------------------------------------
     // API CALL
-    // Uses apiUrl defined at the top —
-    // localhost for local dev, /api/generate
-    // for the deployed Vercel version
     // ----------------------------------------
     try {
         const response = await fetch(apiUrl, {
@@ -233,23 +291,21 @@ Notes: ${notes.value}`;
             body: JSON.stringify({ systemPrompt, userMessage })
         });
 
-        // If the server itself returned an error, throw it
         if (!response.ok) throw new Error('Server error');
 
-        // Parse the JSON response from the backend
         const data = await response.json();
 
-        // If the AI returned an error key, display it and stop
         if (data.error) {
             output.innerHTML = `<p>${data.error}</p>`;
             return;
         }
 
-        // Everything is good — render the output
-        renderOutput(data);
+        // Only count successful generations toward the daily limit
+        incrementUsageCount();
+
+        renderOutput(data, daysRemaining);
 
     } catch (err) {
-        // Log the error for debugging and show a friendly message to the user
         console.error('Error:', err.message);
         output.innerHTML = '<p>Something went wrong. Please try again.</p>';
     }
@@ -258,51 +314,30 @@ Notes: ${notes.value}`;
 
 // ============================================
 // RENDER OUTPUT
-// Takes the parsed JSON from the API response
-// and builds the HTML to display each section:
-// 1. Grounding message (if distracted)
-// 2. Summary
-// 3. Flashcards with card counter
-// 4. Practice questions (if not overwhelmed)
-// 5. Feedback form
+// Builds the shared sections (grounding, summary,
+// flashcards), then branches based on session type:
+// Normal gets the reflective questions + a simple
+// comeback line. Exam gets a placeholder container
+// that the interactive quiz is injected into after
+// the HTML is in the DOM.
 // ============================================
 
-function renderOutput(data) {
-    // Start with an empty string and build up the HTML
+function renderOutput(data, daysRemaining) {
     let html = '';
 
-    // ----------------------------------------
-    // GROUNDING MESSAGE
-    // Only shown if the student selected Distracted
-    // The AI populates this with a calm message
-    // For Ready and Overwhelmed it will be empty
-    // ----------------------------------------
     if (data.grounding) {
         html += `<div id="groundingSection">
             <p>${data.grounding}</p>
         </div>`;
     }
 
-    // ----------------------------------------
-    // SUMMARY
-    // Always shown
-    // Length varies based on emotional state
-    // ----------------------------------------
     html += `<div id="summarySection">
         <h2>Summary</h2>
         <p>${data.summary}</p>
     </div>`;
 
-    // ----------------------------------------
-    // FLASHCARDS
-    // Always shown
-    // Number varies based on emotional state
-    // Each card shows front (concept) and back (explanation)
-    // Card counter shows position e.g. "Card 1 of 6"
-    // ----------------------------------------
     html += `<div id="flashcardsSection">
         <h2>Flashcards</h2>`;
-
     data.flashcards.forEach((card, index) => {
         html += `<div class="flashcard">
             <p class="cardNumber">Card ${index + 1} of ${data.flashcards.length}</p>
@@ -310,32 +345,36 @@ function renderOutput(data) {
             <p class="cardBack">${card.back}</p>
         </div>`;
     });
-
     html += `</div>`;
 
     // ----------------------------------------
-    // PRACTICE QUESTIONS
-    // Only shown if questions array is not empty
-    // Empty when student is Overwhelmed
-    // Type varies based on preparation level
+    // NORMAL SESSION TYPE
+    // Reflective questions + a gentle, generic
+    // comeback line (no scoring, so no specifics)
     // ----------------------------------------
-    if (data.questions && data.questions.length > 0) {
-        html += `<div id="questionsSection">
-            <h2>Practice Questions</h2>`;
-
-        data.questions.forEach((q, index) => {
-            html += `<p>${index + 1}. ${q}</p>`;
-        });
-
-        html += `</div>`;
+    if (sessionType === 'normal') {
+        if (data.questions && data.questions.length > 0) {
+            html += `<div id="questionsSection">
+                <h2>Practice Questions</h2>`;
+            data.questions.forEach((q, index) => {
+                html += `<p>${index + 1}. ${q}</p>`;
+            });
+            html += `</div>`;
+        }
+        html += `<div id="comebackSection"><p>Even ten minutes tomorrow keeps this fresh — come back whenever you're ready.</p></div>`;
     }
 
     // ----------------------------------------
-    // FEEDBACK FORM
-    // Appears after every successful generation
-    // Submitted to Formspree — responses stored there
-    // Four questions: level, check-in, readiness, open text
-    // Replaced with a thank you message on submit
+    // EXAM SESSION TYPE
+    // Empty placeholder — the interactive quiz
+    // gets built into this after innerHTML is set
+    // ----------------------------------------
+    if (sessionType === 'exam') {
+        html += `<div id="examSection"></div>`;
+    }
+
+    // ----------------------------------------
+    // FEEDBACK FORM (both session types)
     // ----------------------------------------
     html += `<div id="feedbackSection">
         <h2>How did that feel?</h2>
@@ -373,15 +412,15 @@ function renderOutput(data) {
         </form>
     </div>`;
 
-    // Insert all the built HTML into the output section
     output.innerHTML = html;
+
+    // Build the interactive quiz now that #examSection exists in the DOM
+    if (sessionType === 'exam' && data.quiz && data.quiz.length > 0) {
+        renderQuiz(data.quiz, daysRemaining);
+    }
 
     // ----------------------------------------
     // FEEDBACK FORM SUBMISSION
-    // Attached after innerHTML is set so the
-    // form element exists in the DOM
-    // Sends data to Formspree via POST
-    // Replaces form with a thank you message on success
     // ----------------------------------------
     const feedbackBtns = document.querySelectorAll('.feedback-btn');
     const selections = { level: null, checkin: null, readiness: null };
@@ -389,11 +428,9 @@ function renderOutput(data) {
     feedbackBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const name = btn.dataset.name;
-            // Deselect all buttons in the same group
             document.querySelectorAll(`.feedback-btn[data-name="${name}"]`).forEach(b => {
                 b.classList.remove('feedback-btn-selected');
             });
-            // Select the clicked one
             btn.classList.add('feedback-btn-selected');
             selections[name] = btn.dataset.value;
         });
@@ -403,7 +440,6 @@ function renderOutput(data) {
     const feedbackError = document.getElementById('feedbackError');
 
     feedbackSubmitBtn.addEventListener('click', async () => {
-        // Validate all three questions are answered
         if (!selections.level || !selections.checkin || !selections.readiness) {
             feedbackError.style.display = 'block';
             return;
@@ -417,6 +453,7 @@ function renderOutput(data) {
             subject: subject.value,
             academicLevel: academicLevel.value,
             prepLevel: prepLevel.value,
+            sessionType: sessionType,
             emotionalState: emotionalState,
             level: selections.level,
             checkin: selections.checkin,
@@ -448,4 +485,123 @@ function renderOutput(data) {
             feedbackSubmitBtn.disabled = false;
         }
     });
+}
+
+
+// ============================================
+// RENDER QUIZ (Exam session type)
+// Builds the interactive multiple-choice quiz,
+// tracks the student's selections, and on submit:
+// scores it, reveals correct/incorrect answers,
+// collects weak concepts, and shows a comeback
+// message built from local logic (no extra AI call).
+// ============================================
+
+function renderQuiz(quiz, daysRemaining) {
+    const examSection = document.getElementById('examSection');
+
+    let quizHtml = `<div id="quizSection"><h2>Quiz</h2><div id="quizQuestions">`;
+
+    quiz.forEach((q, qIndex) => {
+        quizHtml += `<div class="quiz-question" data-index="${qIndex}" data-correct="${q.correctIndex}" data-concept="${q.concept}">
+            <p class="quiz-question-text">${qIndex + 1}. ${q.question}</p>
+            <div class="quiz-options">`;
+        q.options.forEach((opt, oIndex) => {
+            quizHtml += `<button type="button" class="quiz-option" data-option-index="${oIndex}">${opt}</button>`;
+        });
+        quizHtml += `</div></div>`;
+    });
+
+    quizHtml += `</div><button type="button" id="submitQuizBtn">Submit Quiz</button></div>`;
+
+    examSection.innerHTML = quizHtml;
+
+    // Tracks which option index the student picked, per question
+    const selections = {};
+
+    document.querySelectorAll('.quiz-question').forEach(qEl => {
+        const qIndex = qEl.dataset.index;
+        qEl.querySelectorAll('.quiz-option').forEach(optBtn => {
+            optBtn.addEventListener('click', () => {
+                qEl.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('quiz-option-selected'));
+                optBtn.classList.add('quiz-option-selected');
+                selections[qIndex] = parseInt(optBtn.dataset.optionIndex);
+            });
+        });
+    });
+
+    document.getElementById('submitQuizBtn').addEventListener('click', () => {
+        let score = 0;
+        const weakConcepts = [];
+
+        document.querySelectorAll('.quiz-question').forEach(qEl => {
+            const qIndex = qEl.dataset.index;
+            const correctIndex = parseInt(qEl.dataset.correct);
+            const concept = qEl.dataset.concept;
+            const selected = selections[qIndex];
+            const optionButtons = qEl.querySelectorAll('.quiz-option');
+
+            optionButtons.forEach((btn, i) => {
+                if (i === correctIndex) {
+                    btn.classList.add('quiz-option-correct');
+                }
+                if (i === selected && selected !== correctIndex) {
+                    btn.classList.add('quiz-option-incorrect');
+                }
+                btn.disabled = true;
+            });
+
+            if (selected === correctIndex) {
+                score++;
+            } else {
+                weakConcepts.push(concept);
+            }
+        });
+
+        // Remove duplicate concepts while keeping the first occurrence's order
+        const uniqueWeakConcepts = [...new Set(weakConcepts)];
+
+        let resultsHtml = `<div id="quizResults">
+            <h2>Results</h2>
+            <p>You got ${score} out of ${quiz.length} correct.</p>`;
+
+        if (uniqueWeakConcepts.length > 0) {
+            resultsHtml += `<div id="weakAreas">
+                <span class="label">Focus on next</span>
+                <ul>${uniqueWeakConcepts.map(c => `<li>${c}</li>`).join('')}</ul>
+            </div>`;
+        }
+
+        resultsHtml += buildComebackMessage(daysRemaining, uniqueWeakConcepts);
+        resultsHtml += `</div>`;
+
+        document.getElementById('submitQuizBtn').style.display = 'none';
+        document.getElementById('quizSection').insertAdjacentHTML('beforeend', resultsHtml);
+    });
+}
+
+
+// ============================================
+// BUILD COMEBACK MESSAGE
+// Generated entirely from local data — no extra
+// AI call needed. Combines the exam countdown
+// with the weakest concept from this session.
+// ============================================
+
+function buildComebackMessage(daysRemaining, weakConcepts) {
+    let message = '';
+
+    if (daysRemaining !== null && daysRemaining > 0) {
+        message += daysRemaining === 1
+            ? `Your exam is tomorrow. `
+            : `${daysRemaining} days until your exam. `;
+    }
+
+    if (weakConcepts.length > 0) {
+        message += `Come back and we'll start with ${weakConcepts[0]}.`;
+    } else {
+        message += `Strong session — come back tomorrow to keep it fresh.`;
+    }
+
+    return `<div id="comebackSection"><p>${message}</p></div>`;
 }
