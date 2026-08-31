@@ -47,6 +47,59 @@ toggle.addEventListener('click', () => {
 });
 
 
+// ============================================
+// PREMIUM BADGE
+// ============================================
+
+const premiumBadge = document.getElementById('premiumBadge');
+premiumBadge.addEventListener('click', () => {
+    showPremiumModal();
+});
+
+function showPremiumModal() {
+    const premiumModal = document.createElement('div');
+    premiumModal.id = 'premiumModalOverlay';
+    premiumModal.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: var(--overlay-bg);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 101;
+        padding: 24px;
+    `;
+
+    premiumModal.innerHTML = `
+        <div style="background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-md); max-width: 420px; width: 100%; padding: 36px 32px; animation: slideUp 0.25s ease;">
+            <p style="font-family: 'Lora', serif; font-size: 1.2rem; color: var(--text-primary); margin-bottom: 8px; font-weight: 600;">Harmoniq Premium</p>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">Coming soon. Here's what's on the way.</p>
+            
+            <div style="background: var(--accent-light); border-radius: var(--radius-sm); padding: 18px 16px; margin-bottom: 20px;">
+                <ul style="list-style: none; font-size: 0.9rem; color: var(--text-primary); line-height: 1.8;">
+                    <li style="margin-bottom: 10px;">✓ <strong>Up to 20 sessions per day</strong> — Study as much as you need</li>
+                    <li style="margin-bottom: 10px;">✓ <strong>Upload documents</strong> — Work with PDFs, Word files, and more</li>
+                    <li>✓ <strong>Saved subjects & history</strong> — Pick up where you left off. Track your progress over time.</li>
+                </ul>
+            </div>
+            
+            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">Premium pricing will start at <strong>RM 49/month</strong>, with flexible pay-per-session options too.</p>
+            
+            <button style="width: 100%; background: var(--accent); color: #ffffff; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; padding: 12px 20px; cursor: pointer; transition: all 0.2s ease;" onclick="closePremiumModal()">Got it</button>
+        </div>
+    `;
+
+    document.body.appendChild(premiumModal);
+}
+
+function closePremiumModal() {
+    const modal = document.getElementById('premiumModalOverlay');
+    if (modal) modal.remove();
+}
+
+
 // Stores the emotional state selected in the modal
 let emotionalState = '';
 
@@ -212,11 +265,21 @@ function showDailyLimitModal() {
     `;
 
     limitModal.innerHTML = `
-        <div style="background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-md); max-width: 400px; width: 100%; padding: 36px 32px; animation: slideUp 0.25s ease;">
+        <div style="background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-md); max-width: 420px; width: 100%; padding: 36px 32px; animation: slideUp 0.25s ease;">
             <p style="font-family: 'Lora', serif; font-size: 1.15rem; color: var(--text-primary); margin-bottom: 8px; font-weight: 400;">You've used your ${DAILY_LIMIT} free sessions for today.</p>
-            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6;">Come back tomorrow for more, or upgrade to unlock unlimited study sessions.</p>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 28px; line-height: 1.6;">Come back tomorrow for more, or be among the first to try Harmoniq Premium when it launches.</p>
+            
+            <div style="background: var(--accent-light); border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 14px 16px; margin-bottom: 24px;">
+                <p style="font-size: 0.8rem; font-weight: 500; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Coming Soon — Premium includes:</p>
+                <ul style="list-style: none; font-size: 0.85rem; color: var(--text-primary); line-height: 1.7;">
+                    <li>✓ Up to 20 sessions per day</li>
+                    <li>✓ Upload files & documents</li>
+                    <li>✓ Save subjects & study history</li>
+                </ul>
+            </div>
+            
             <div style="display: flex; gap: 10px; flex-direction: column;">
-                <button class="dailyLimitBtn dailyLimitUpgrade" type="button">Upgrade to Premium</button>
+                <button class="dailyLimitBtn dailyLimitUpgrade" type="button">Interested? Tell us</button>
                 <button class="dailyLimitBtn dailyLimitWait" type="button">Wait Until Tomorrow</button>
             </div>
         </div>
@@ -225,8 +288,9 @@ function showDailyLimitModal() {
     document.body.appendChild(limitModal);
 
     limitModal.querySelector('.dailyLimitUpgrade').addEventListener('click', () => {
-        // TODO: navigate to payment/upgrade flow
-        console.log('Upgrade clicked');
+        // TODO: navigate to interest form or early access signup
+        console.log('Interest signaled');
+        alert("Thanks for your interest! We'll reach out when Premium launches.");
         limitModal.remove();
     });
 

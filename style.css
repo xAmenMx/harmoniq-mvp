@@ -138,6 +138,12 @@ body {
     margin-bottom: 6px;
 }
 
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 h1 {
     font-family: 'Lora', serif;
     font-weight: 600;
@@ -160,7 +166,8 @@ h1 {
    DARK MODE TOGGLE BUTTON
    ============================================ */
 
-#themeToggle {
+#themeToggle,
+.premium-badge {
     background: var(--surface);
     border: 1.5px solid var(--border);
     border-radius: 20px;
@@ -175,7 +182,14 @@ h1 {
     margin-top: 8px;
 }
 
-#themeToggle:hover {
+#themeToggle:hover,
+.premium-badge:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.premium-badge {
+    background: var(--accent-light);
     border-color: var(--accent);
     color: var(--accent);
 }
@@ -381,6 +395,11 @@ textarea {
 @keyframes slideUp {
     from { opacity: 0; transform: translateY(16px); }
     to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
 #modalMessage {
@@ -914,6 +933,17 @@ textarea {
 
 .dailyLimitWait:hover {
     background: var(--accent-light);
+}
+
+
+/* ============================================
+   PREMIUM MODAL BUTTON
+   ============================================ */
+
+#premiumModalOverlay button:last-child:hover {
+    background: var(--accent-hover) !important;
+    box-shadow: 0 4px 12px var(--accent-shadow);
+    transform: translateY(-1px);
 }
 
 
