@@ -548,10 +548,53 @@ textarea {
 
 
 /* ============================================
-   QUESTIONS SECTION (Normal session type)
+   MCQUESTIONS SECTION (Normal session type)
+   Non-interactive multiple choice for self-eval
    ============================================ */
 
-#questionsSection p {
+.mcquestion {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+}
+
+.mcquestion-text {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+.mcquestion-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mcquestion-option {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    padding: 6px 0;
+    line-height: 1.5;
+}
+
+.mcquestion-answer {
+    margin-top: 10px !important;
+    color: var(--accent) !important;
+    font-weight: 500;
+    font-size: 0.85rem !important;
+}
+
+
+/* ============================================
+   BONUS QUESTIONS SECTION (Normal session type)
+   Reflective/Socratic questions
+   ============================================ */
+
+#bonusQuestionsSection p {
     font-size: 0.95rem;
     color: var(--text-primary);
     padding: 14px 0;
@@ -559,7 +602,7 @@ textarea {
     line-height: 1.6;
 }
 
-#questionsSection p:last-child {
+#bonusQuestionsSection p:last-child {
     border-bottom: none;
 }
 
@@ -832,6 +875,45 @@ textarea {
     font-style: italic;
     color: var(--text-secondary);
     font-size: 0.95rem;
+}
+
+
+/* ============================================
+   DAILY LIMIT MODAL BUTTONS
+   ============================================ */
+
+.dailyLimitBtn {
+    border: 1.5px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 12px 20px;
+    text-align: center;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.dailyLimitUpgrade {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+}
+
+.dailyLimitUpgrade:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 4px 12px var(--accent-shadow);
+}
+
+.dailyLimitWait {
+    background: transparent;
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.dailyLimitWait:hover {
+    background: var(--accent-light);
 }
 
 

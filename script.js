@@ -143,7 +143,7 @@ generateBtn.addEventListener('click', () => {
 
     // Check the daily free limit before anything else
     if (getUsageCount() >= DAILY_LIMIT) {
-        formError.textContent = `You've used your ${DAILY_LIMIT} free sessions for today. Come back tomorrow for more.`;
+        showDailyLimitModal();
         return;
     }
 
@@ -192,6 +192,51 @@ stateBtns.forEach(btn => {
 
 
 // ============================================
+// DAILY LIMIT MODAL
+// ============================================
+
+function showDailyLimitModal() {
+    const limitModal = document.createElement('div');
+    limitModal.id = 'dailyLimitModalOverlay';
+    limitModal.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: var(--overlay-bg);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 101;
+        padding: 24px;
+    `;
+
+    limitModal.innerHTML = `
+        <div style="background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-md); max-width: 400px; width: 100%; padding: 36px 32px; animation: slideUp 0.25s ease;">
+            <p style="font-family: 'Lora', serif; font-size: 1.15rem; color: var(--text-primary); margin-bottom: 8px; font-weight: 400;">You've used your ${DAILY_LIMIT} free sessions for today.</p>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6;">Come back tomorrow for more, or upgrade to unlock unlimited study sessions.</p>
+            <div style="display: flex; gap: 10px; flex-direction: column;">
+                <button class="dailyLimitBtn dailyLimitUpgrade" type="button">Upgrade to Premium</button>
+                <button class="dailyLimitBtn dailyLimitWait" type="button">Wait Until Tomorrow</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(limitModal);
+
+    limitModal.querySelector('.dailyLimitUpgrade').addEventListener('click', () => {
+        // TODO: navigate to payment/upgrade flow
+        console.log('Upgrade clicked');
+        limitModal.remove();
+    });
+
+    limitModal.querySelector('.dailyLimitWait').addEventListener('click', () => {
+        limitModal.remove();
+    });
+};
+
+
+// ============================================
 // DAYS REMAINING HELPER
 // Calculates whole days between today and the
 // selected exam date. Used only in exam mode.
@@ -222,7 +267,7 @@ async function generateMaterials() {
     // ----------------------------------------
     const systemPrompt = `You are a study assistant for Harmoniq, a tool designed to help students learn effectively without feeling overwhelmed. Your job is to convert student notes into clear, concise study materials.
 
-Generate the following output in JSON format with five keys: "grounding", "summary", "flashcards", "questions", and "quiz".
+Generate the following output in JSON format with six keys: "grounding", "summary", "flashcards", "mcquestions", "questions", and "quiz".
 
 If the student's notes exceed 3,000 words, do not process them. Instead return a JSON object with a single key: "error" with the value: "Your notes are too long. Please paste the most relevant section, ideally under 3,000 words, and try again."
 
@@ -239,10 +284,12 @@ Summary: Write 5-6 sentences covering only the most important concepts from the 
 Flashcards: Generate between 5-10 cards, each with a "front" and "back" key. If the student is overwhelmed, generate only 5 cards.
 
 Session type: The student selects either "Normal" or "Exam" as their session type.
-- If session type is "Normal": populate the "questions" key following the Questions rules below. Leave "quiz" as an empty array.
-- If session type is "Exam": populate the "quiz" key following the Quiz rules below. Leave "questions" as an empty array.
+- If session type is "Normal": populate both "mcquestions" (MCQuestions rules below) and "questions" (Questions rules below). Leave "quiz" as an empty array.
+- If session type is "Exam": populate the "quiz" key following the Quiz rules below. Leave "mcquestions" and "questions" as empty arrays.
 
-Questions (Normal session type only): Generate 3 practice questions as a simple array of strings. Each question is just the question text — no objects, no "type" keys. Match type to preparation level:
+MCQuestions (Normal session type only): Generate 3-4 multiple-choice questions as a learning tool, not scored. Each is an object with "question" (text), "options" (array of exactly 4 strings), and "correctAnswer" (the correct option text). These help students evaluate their own understanding without pressure. Include them below the summary and flashcards. If the student is overwhelmed: skip mcquestions, return an empty array.
+
+Questions (Normal session type only): Generate 2-3 Socratic/reflective questions as a simple array of strings. Each question is just the question text — no objects. Match type to preparation level:
 - "First time seeing it" or "Read once": general recall questions — what, define, describe.
 - "Read a few times": mix of recall and Socratic questions.
 - "Very familiar": Socratic questions only — why, how, what if, what is the connection.
@@ -349,13 +396,28 @@ function renderOutput(data, daysRemaining) {
 
     // ----------------------------------------
     // NORMAL SESSION TYPE
-    // Reflective questions + a gentle, generic
-    // comeback line (no scoring, so no specifics)
+    // MCQuestions (non-interactive) + reflective
+    // questions as "Concept Boosters" + comeback
     // ----------------------------------------
     if (sessionType === 'normal') {
+        if (data.mcquestions && data.mcquestions.length > 0) {
+            html += `<div id="mcquestionsSection">
+                <h2>Check Your Understanding</h2>`;
+            data.mcquestions.forEach((q, index) => {
+                html += `<div class="mcquestion">
+                    <p class="mcquestion-text"><strong>${index + 1}. ${q.question}</strong></p>
+                    <div class="mcquestion-options">`;
+                q.options.forEach(opt => {
+                    html += `<p class="mcquestion-option">• ${opt}</p>`;
+                });
+                html += `</div><p class="mcquestion-answer" style="margin-top:10px; color:var(--text-secondary); font-size:0.85rem;"><em>Answer: ${q.correctAnswer}</em></p></div>`;
+            });
+            html += `</div>`;
+        }
         if (data.questions && data.questions.length > 0) {
-            html += `<div id="questionsSection">
-                <h2>Practice Questions</h2>`;
+            html += `<div id="bonusQuestionsSection">
+                <h2>Concept Boosters</h2>
+                <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:14px;">Reflect on these questions to deepen your understanding.</p>`;
             data.questions.forEach((q, index) => {
                 html += `<p>${index + 1}. ${q}</p>`;
             });
