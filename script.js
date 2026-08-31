@@ -170,6 +170,27 @@ function incrementUsageCount() {
     }));
 }
 
+// Logs beta session to Formspree for analytics
+function logBetaSession(sessionData) {
+    const payload = {
+        type: 'beta_session_log',
+        betaCode: betaCode,
+        timestamp: new Date().toISOString(),
+        subject: sessionData.subject,
+        emotionalState: sessionData.emotionalState,
+        sessionType: sessionData.sessionType,
+        daysRemaining: sessionData.daysRemaining
+    };
+
+    fetch('https://formspree.io/f/xnjgpeqn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).catch(err => {
+        console.log('Session log failed (non-critical):', err.message);
+    });
+}
+
 
 // ============================================
 // WORD COUNT TRACKER
@@ -229,6 +250,82 @@ generateBtn.addEventListener('click', () => {
 
     modalOverlay.style.display = 'flex';
 });
+
+
+// ============================================
+// BETA CODE MANAGEMENT
+// ============================================
+
+const VALID_BETA_CODES = [
+    'BETA001', 'BETA002', 'BETA003', 'BETA004', 'BETA005',
+    'BETA006', 'BETA007', 'BETA008', 'BETA009', 'BETA010',
+    'BETA011', 'BETA012', 'BETA013', 'BETA014', 'BETA015',
+    'BETA016', 'BETA017', 'BETA018', 'BETA019', 'BETA020'
+];
+
+let betaCode = localStorage.getItem('harmoniqBetaCode');
+
+if (!betaCode) {
+    showBetaCodeModal();
+}
+
+function showBetaCodeModal() {
+    const modal = document.createElement('div');
+    modal.id = 'betaCodeModalOverlay';
+    modal.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: var(--overlay-bg);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 102;
+        padding: 24px;
+    `;
+
+    modal.innerHTML = `
+        <div style="background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-md); max-width: 380px; width: 100%; padding: 36px 32px; animation: slideUp 0.25s ease;">
+            <p style="font-family: 'Lora', serif; font-size: 1.15rem; color: var(--text-primary); margin-bottom: 12px; font-weight: 400;">Beta Test Access</p>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6;">Enter your beta code from the sign-up sheet to get started.</p>
+            
+            <input type="text" id="betaCodeInput" style="width: 100%; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; padding: 12px 16px; margin-bottom: 12px; text-transform: uppercase; outline: none; transition: border-color 0.2s ease;" placeholder="e.g. BETA001">
+            
+            <p id="betaCodeError" style="font-size: 0.8rem; color: var(--error-color); margin-bottom: 12px; display: none;"></p>
+            
+            <button type="button" id="betaCodeSubmit" style="width: 100%; background: var(--accent); color: #ffffff; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; padding: 12px 20px; cursor: pointer; transition: all 0.2s ease;">Continue</button>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('betaCodeSubmit').addEventListener('click', storeBetaCode);
+    document.getElementById('betaCodeInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') storeBetaCode();
+    });
+}
+
+function storeBetaCode() {
+    const code = document.getElementById('betaCodeInput').value.trim().toUpperCase();
+    const errorEl = document.getElementById('betaCodeError');
+
+    if (!code) {
+        errorEl.textContent = 'Please enter a code.';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    if (!VALID_BETA_CODES.includes(code)) {
+        errorEl.textContent = 'Code not recognized. Check the sign-up sheet.';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    localStorage.setItem('harmoniqBetaCode', code);
+    betaCode = code;
+    document.getElementById('betaCodeModalOverlay').remove();
+}
 
 
 // ============================================
@@ -414,6 +511,14 @@ Notes: ${notes.value}`;
         // Only count successful generations toward the daily limit
         incrementUsageCount();
 
+        // Log session for beta analytics
+        logBetaSession({
+            subject: subject.value,
+            emotionalState: emotionalState,
+            sessionType: sessionType,
+            daysRemaining: sessionType === 'exam' ? daysRemaining : null
+        });
+
         renderOutput(data, daysRemaining);
 
     } catch (err) {
@@ -576,6 +681,8 @@ function renderOutput(data, daysRemaining) {
         feedbackSubmitBtn.disabled = true;
 
         const formData = {
+            type: 'beta_feedback',
+            betaCode: betaCode,
             subject: subject.value,
             academicLevel: academicLevel.value,
             prepLevel: prepLevel.value,
