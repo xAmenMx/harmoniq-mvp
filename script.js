@@ -132,10 +132,11 @@ sessionTypeBtns.forEach(btn => {
 
 // ============================================
 // DAILY FREE LIMIT
-// Free users get a fixed number of generations
-// per day. Tracked in localStorage keyed to
-// today's date, so it survives page reloads
-// but resets naturally the next day.
+// Beta users get a fixed number of generations
+// per day per betaCode. Tracked in localStorage
+// keyed to betaCode + date, so it survives page
+// reloads and persists across devices for the
+// same betaCode, but resets naturally the next day.
 // ============================================
 
 const DAILY_LIMIT = 2;
@@ -147,11 +148,12 @@ function getTodayString() {
 }
 
 // Reads how many generations have been used today
+// Keyed by betaCode so limit is per user, not per device
 // Returns 0 if nothing is stored yet, or if the stored date isn't today
 function getUsageCount() {
     let stored;
     try {
-        stored = JSON.parse(localStorage.getItem('harmoniqUsage'));
+        stored = JSON.parse(localStorage.getItem(`harmoniqUsage_${betaCode}`));
     } catch (e) {
         stored = null;
     }
@@ -162,9 +164,10 @@ function getUsageCount() {
 }
 
 // Increments today's usage count by one
+// Keyed by betaCode so limit is per user, not per device
 function incrementUsageCount() {
     const current = getUsageCount();
-    localStorage.setItem('harmoniqUsage', JSON.stringify({
+    localStorage.setItem(`harmoniqUsage_${betaCode}`, JSON.stringify({
         date: getTodayString(),
         count: current + 1
     }));
@@ -448,7 +451,7 @@ Session type: The student selects either "Normal" or "Exam" as their session typ
 - If session type is "Normal": populate both "mcquestions" (MCQuestions rules below) and "questions" (Questions rules below). Leave "quiz" as an empty array.
 - If session type is "Exam": populate the "quiz" key following the Quiz rules below. Leave "mcquestions" and "questions" as empty arrays.
 
-MCQuestions (Normal session type only): Generate 3-4 multiple-choice questions as a learning tool, not scored. Each is an object with "question" (text), "options" (array of exactly 4 strings), and "correctAnswer" (the correct option text). These help students evaluate their own understanding without pressure. Include them below the summary and flashcards. If the student is overwhelmed: skip mcquestions, return an empty array.
+MCQuestions (Normal session type only): Generate 3-4 multiple-choice questions as a learning tool, not scored. Each is an object with four keys: "question" (text), "options" (array of exactly 4 strings), "correctAnswer" (the correct option text), and "explanation" (1-2 sentences explaining why this answer is correct and what makes the other options incorrect). These help students evaluate their own understanding without pressure. Include them below the summary and flashcards. If the student is overwhelmed: skip mcquestions, return an empty array.
 
 Questions (Normal session type only): Generate 2-3 Socratic/reflective questions as a simple array of strings. Each question is just the question text — no objects. Match type to preparation level:
 - "First time seeing it" or "Read once": general recall questions — what, define, describe.
@@ -565,21 +568,21 @@ function renderOutput(data, daysRemaining) {
 
     // ----------------------------------------
     // NORMAL SESSION TYPE
-    // MCQuestions (non-interactive) + reflective
-    // questions as "Concept Boosters" + comeback
+    // MCQuestions (interactive) + Concept Boosters
+    // (reflective questions) + comeback message
     // ----------------------------------------
     if (sessionType === 'normal') {
         if (data.mcquestions && data.mcquestions.length > 0) {
             html += `<div id="mcquestionsSection">
                 <h2>Check Your Understanding</h2>`;
             data.mcquestions.forEach((q, index) => {
-                html += `<div class="mcquestion">
+                html += `<div class="mcquestion" data-index="${index}" data-correct="${q.correctAnswer}" data-explanation="${q.explanation.replace(/"/g, '&quot;')}">
                     <p class="mcquestion-text"><strong>${index + 1}. ${q.question}</strong></p>
                     <div class="mcquestion-options">`;
                 q.options.forEach(opt => {
-                    html += `<p class="mcquestion-option">• ${opt}</p>`;
+                    html += `<button type="button" class="mcquestion-option" data-option="${opt}">${opt}</button>`;
                 });
-                html += `</div><p class="mcquestion-answer" style="margin-top:10px; color:var(--text-secondary); font-size:0.85rem;"><em>Answer: ${q.correctAnswer}</em></p></div>`;
+                html += `</div><div class="mcquestion-result" style="display:none;"></div></div>`;
             });
             html += `</div>`;
         }
@@ -644,6 +647,49 @@ function renderOutput(data, daysRemaining) {
     </div>`;
 
     output.innerHTML = html;
+
+    // ----------------------------------------
+    // MCQ INTERACTION (Normal session type)
+    // ----------------------------------------
+    if (sessionType === 'normal' && data.mcquestions && data.mcquestions.length > 0) {
+        document.querySelectorAll('.mcquestion').forEach(qEl => {
+            const optionBtns = qEl.querySelectorAll('.mcquestion-option');
+            const resultDiv = qEl.querySelector('.mcquestion-result');
+            const correctAnswer = qEl.dataset.correct;
+            const explanation = qEl.dataset.explanation;
+            let answered = false;
+
+            optionBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (answered) return;
+                    answered = true;
+
+                    const selected = btn.dataset.option;
+                    const isCorrect = selected === correctAnswer;
+
+                    optionBtns.forEach(b => {
+                        b.disabled = true;
+                        if (b.dataset.option === correctAnswer) {
+                            b.classList.add('mcquestion-correct');
+                            b.innerHTML = `✓ ${b.textContent}`;
+                        }
+                        if (b.dataset.option === selected && !isCorrect) {
+                            b.classList.add('mcquestion-incorrect');
+                            b.innerHTML = `✗ ${b.textContent}`;
+                        }
+                    });
+
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `
+                        <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);">
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;"><strong>${isCorrect ? '✓ Correct!' : '✗ Not quite.'}</strong></p>
+                            <p style="font-size: 0.85rem; color: var(--text-primary); line-height: 1.6;">${explanation}</p>
+                        </div>
+                    `;
+                });
+            });
+        });
+    }
 
     // Build the interactive quiz now that #examSection exists in the DOM
     if (sessionType === 'exam' && data.quiz && data.quiz.length > 0) {
@@ -777,9 +823,11 @@ function renderQuiz(quiz, daysRemaining) {
             optionButtons.forEach((btn, i) => {
                 if (i === correctIndex) {
                     btn.classList.add('quiz-option-correct');
+                    btn.innerHTML = `✓ ${btn.textContent}`;
                 }
                 if (i === selected && selected !== correctIndex) {
                     btn.classList.add('quiz-option-incorrect');
+                    btn.innerHTML = `✗ ${btn.textContent}`;
                 }
                 btn.disabled = true;
             });

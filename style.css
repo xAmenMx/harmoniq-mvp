@@ -16,30 +16,30 @@
    ============================================ */
 
 :root {
-    --bg:             #f7f4ef;
+    --bg:             #faf8f3;
     --surface:        #ffffff;
-    --border:         #e4ddd3;
-    --text-primary:   #2c2825;
-    --text-secondary: #7a6f66;
-    --accent:         #6b8f71;
-    --accent-hover:   #5a7d60;
+    --border:         #ddd5ca;
+    --text-primary:   #1a1815;
+    --text-secondary: #5a5248;
+    --accent:         #5a7d60;
+    --accent-hover:   #4a6d50;
     --accent-light:   #e8f0e9;
-    --accent-shadow:  rgba(107, 143, 113, 0.3);
+    --accent-shadow:  rgba(90, 125, 96, 0.3);
 
-    --ready:          #6b8f71;
+    --ready:          #5a7d60;
     --ready-light:    #e8f0e9;
-    --distracted:     #c4924a;
-    --distracted-light: #f7ede0;
-    --distracted-text:  #8a6030;
-    --overwhelmed:    #7a90b0;
-    --overwhelmed-light: #e8eef5;
+    --distracted:     #b8833b;
+    --distracted-light: #faf2e3;
+    --distracted-text:  #6d4a20;
+    --overwhelmed:    #647a9e;
+    --overwhelmed-light: #e8ecf5;
 
-    --error-color:    #b85c4a;
+    --error-color:    #9d4a39;
     --radius:         12px;
     --radius-sm:      8px;
-    --shadow:         0 2px 16px rgba(44, 40, 37, 0.07);
-    --shadow-md:      0 4px 32px rgba(44, 40, 37, 0.12);
-    --overlay-bg:     rgba(44, 40, 37, 0.4);
+    --shadow:         0 2px 16px rgba(26, 24, 21, 0.08);
+    --shadow-md:      0 4px 32px rgba(26, 24, 21, 0.12);
+    --overlay-bg:     rgba(26, 24, 21, 0.45);
 }
 
 
@@ -48,28 +48,28 @@
    ============================================ */
 
 [data-theme="dark"] {
-    --bg:             #1e1b18;
-    --surface:        #28231f;
-    --border:         #3a332c;
-    --text-primary:   #f0ebe4;
-    --text-secondary: #9e9188;
-    --accent:         #7aaa81;
-    --accent-hover:   #8dba94;
-    --accent-light:   #1e2e20;
-    --accent-shadow:  rgba(122, 170, 129, 0.25);
+    --bg:             #1a1815;
+    --surface:        #252118;
+    --border:         #37302a;
+    --text-primary:   #f5f2ed;
+    --text-secondary: #b5aca3;
+    --accent:         #8bb892;
+    --accent-hover:   #9bc8a2;
+    --accent-light:   #1e2f22;
+    --accent-shadow:  rgba(139, 184, 146, 0.25);
 
-    --ready:          #7aaa81;
-    --ready-light:    #1e2e20;
-    --distracted:     #d4a45a;
-    --distracted-light: #2e2010;
-    --distracted-text:  #d4a45a;
-    --overwhelmed:    #8aa0be;
-    --overwhelmed-light: #1a2030;
+    --ready:          #8bb892;
+    --ready-light:    #1e2f22;
+    --distracted:     #ddb849;
+    --distracted-light: #332509;
+    --distracted-text:  #e5c766;
+    --overwhelmed:    #92a8ce;
+    --overwhelmed-light: #1a2438;
 
-    --error-color:    #d4745e;
-    --shadow:         0 2px 16px rgba(0, 0, 0, 0.25);
-    --shadow-md:      0 4px 32px rgba(0, 0, 0, 0.4);
-    --overlay-bg:     rgba(0, 0, 0, 0.6);
+    --error-color:    #e08068;
+    --shadow:         0 2px 16px rgba(0, 0, 0, 0.35);
+    --shadow-md:      0 4px 32px rgba(0, 0, 0, 0.5);
+    --overlay-bg:     rgba(0, 0, 0, 0.65);
 }
 
 
@@ -568,7 +568,7 @@ textarea {
 
 /* ============================================
    MCQUESTIONS SECTION (Normal session type)
-   Non-interactive multiple choice for self-eval
+   Interactive multiple choice for self-eval
    ============================================ */
 
 .mcquestion {
@@ -583,28 +583,67 @@ textarea {
 .mcquestion-text {
     font-size: 0.95rem;
     color: var(--text-primary);
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     line-height: 1.6;
 }
 
 .mcquestion-options {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
 }
 
 .mcquestion-option {
-    font-size: 0.9rem;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
     color: var(--text-primary);
-    padding: 6px 0;
-    line-height: 1.5;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    padding: 10px 16px;
+    text-align: left;
+    transition: all 0.2s ease;
 }
 
-.mcquestion-answer {
-    margin-top: 10px !important;
+.mcquestion-option:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent-light);
+}
+
+.mcquestion-option:disabled {
+    cursor: default;
+    opacity: 0.9;
+}
+
+.mcquestion-correct {
+    border-color: var(--accent) !important;
+    background: var(--accent-light) !important;
     color: var(--accent) !important;
     font-weight: 500;
-    font-size: 0.85rem !important;
+}
+
+.mcquestion-correct::after {
+    content: " ✓";
+    font-weight: 700;
+}
+
+.mcquestion-incorrect {
+    border-color: var(--error-color) !important;
+    background: var(--distracted-light) !important;
+    color: var(--error-color) !important;
+}
+
+.mcquestion-incorrect::after {
+    content: " ✗";
+    font-weight: 700;
+}
+
+.mcquestion-result {
+    background: var(--accent-light);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-top: 12px;
 }
 
 
@@ -613,12 +652,21 @@ textarea {
    Reflective/Socratic questions
    ============================================ */
 
+#bonusQuestionsSection {
+    margin-top: 20px;
+}
+
 #bonusQuestionsSection p {
     font-size: 0.95rem;
     color: var(--text-primary);
-    padding: 14px 0;
+    padding: 12px 0;
     border-bottom: 1px solid var(--border);
     line-height: 1.6;
+}
+
+#bonusQuestionsSection p:first-of-type {
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
 }
 
 #bonusQuestionsSection p:last-child {
@@ -681,10 +729,20 @@ textarea {
     font-weight: 500;
 }
 
+.quiz-option-correct::after {
+    content: " ✓";
+    font-weight: 700;
+}
+
 .quiz-option-incorrect {
     border-color: var(--error-color) !important;
     background: var(--distracted-light) !important;
     color: var(--error-color) !important;
+}
+
+.quiz-option-incorrect::after {
+    content: " ✗";
+    font-weight: 700;
 }
 
 .quiz-option:disabled {
