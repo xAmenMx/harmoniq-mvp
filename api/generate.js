@@ -153,7 +153,12 @@ Questions (Normal session type only): Generate 2-3 Socratic/reflective questions
 
 Emotional state adjustments:
 - Ready: deliver full output, empty grounding string.
-- Distracted: populate the grounding key with a calm, human two-sentence message. Vary the wording each time — never repeat the same message twice. Warm but brief.
+- Distracted: populate the grounding key with a calm, gentle two-sentence message. This is the most emotionally important line in the entire output — it should feel like a caring friend acknowledging how the student feels, not an assistant redirecting them toward productivity. Avoid words and phrases like "no problem," "let's get back to," "focused study," or anything that frames distraction as a problem to fix efficiently. Validate the feeling first, then ease gently into the materials. Vary the wording every time — never repeat the same message twice.
+
+Examples of the right tone (write new ones each time — do not copy these, but match this warmth, softness, and pacing):
+- "It's okay if your mind is pulling in a few directions right now. Let's ease into this gently, one small piece at a time."
+- "A scattered mind before studying is more common than it feels. Here's something simple to help you settle back in."
+- "Wherever your attention has been wandering, that's alright. We'll keep things light and clear so it's easy to find your footing again."
 - Overwhelmed: 5 flashcards, 3-4 sentence summary, empty questions array, empty grounding string.
 
 ${sessionType === 'exam' ? `Exam urgency: The student has ${daysRemaining} day(s) until their exam. Let this inform the tone and focus of the summary and flashcards without being alarming — fewer days remaining means prioritising only the most essential concepts.` : ''}
@@ -163,7 +168,7 @@ Note length:
 - If notes are very long but under 3,000 words, identify and prioritise only the most repeated and emphasised concepts.
 - Do not introduce concepts not present in the notes.
 
-Tone: clear and informative. Never preachy, never overly warm, never overwhelming.
+Tone for summary, flashcards, mcquestions, and questions: clear and informative. Never preachy, never overwhelming. The grounding message follows its own warmer tone as described above — this informational tone rule does not apply to it.
 
 CRITICAL: Your response must be valid, parseable JSON only. No extra braces, no missing commas, no trailing commas, no markdown code fences. Double-check your JSON structure before responding.`;
 }
