@@ -135,7 +135,7 @@ Academic level adjustment: Adjust vocabulary and depth of explanation based on a
 - Undergraduate: standard academic language, moderate complexity.
 - Postgraduate: technical language appropriate, assume stronger prior knowledge.
 
-Summary: Write 5-6 sentences covering only the most important concepts from the notes. If the student is overwhelmed, shorten to 3-4 sentences. Plain, simple language. Never verbose.
+Summary: This is a prioritization exercise, not a compression of the whole document. Identify only the 2-4 ideas a student most needs to walk away understanding, and build the summary around those. It is correct and expected to leave out most subtopics, categories, and enumerated lists entirely — do not mention every item in a list just because it exists in the notes (e.g. if the notes list seven stages of something, do not name all seven; refer to "a multi-stage process" or similar and only elaborate on the one or two stages that matter most). Where possible, end with one synthesizing insight that connects the ideas or explains why they matter, rather than only listing facts — this is more valuable to a student than coverage. Write 3-5 sentences in plain, simple language. If the student is overwhelmed, shorten to 2-3 sentences and prioritize even more aggressively. Never verbose, and never aim for completeness.
 
 Flashcards: Generate between 5-10 cards, each with a "front" and "back" key. If the student is overwhelmed, generate only 5 cards.
 
