@@ -73,7 +73,22 @@
 
             <div class="form-group">
                 <label for="notes">Your Notes:</label>
-                <textarea id="notes" rows="10" placeholder="Paste your notes here (maximum 3,000 words)"></textarea>
+
+                <!-- ============================================
+                     FILE UPLOAD (PDF, DOCX, TXT)
+                     Text is extracted entirely in the browser —
+                     no file bytes are sent to the server. Extracted
+                     text just fills the same notes textarea, so it
+                     goes through the same word-count check and
+                     generation flow as pasted text.
+                     ============================================ -->
+                <div id="fileUploadRow">
+                    <label for="fileUpload" id="fileUploadLabel">📄 Upload a file (PDF, DOCX, or TXT)</label>
+                    <input type="file" id="fileUpload" accept=".pdf,.docx,.txt" style="display:none;">
+                </div>
+                <p id="fileUploadStatus"></p>
+
+                <textarea id="notes" rows="10" placeholder="Paste your notes here (maximum 3,000 words), or upload a file above"></textarea>
                 <p id="wordCount">0 / 3,000 words</p>
             </div>
 
@@ -101,6 +116,10 @@
         </div>
     </div>
 
+    <!-- File text extraction libraries — used only in the browser,
+         so uploaded files never touch the server. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

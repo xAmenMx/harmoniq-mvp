@@ -17,6 +17,8 @@ const prepLevel = document.querySelector('#prepLevel');
 const examDateGroup = document.querySelector('#examDateGroup');
 const examDate = document.querySelector('#examDate');
 const notes = document.querySelector('#notes');
+const fileUpload = document.querySelector('#fileUpload');
+const fileUploadStatus = document.querySelector('#fileUploadStatus');
 const wordCount = document.querySelector('#wordCount');
 const generateBtn = document.querySelector('#generateBtn');
 const formError = document.querySelector('#formError');
@@ -192,6 +194,106 @@ function logBetaSession(sessionData) {
     }).catch(err => {
         console.log('Session log failed (non-critical):', err.message);
     });
+}
+
+
+// ============================================
+// FILE UPLOAD — TEXT EXTRACTION
+// Runs entirely in the browser. Extracted text
+// fills the notes textarea, then flows through
+// the exact same word-count check and generation
+// pipeline as pasted text — no backend changes.
+//
+// NOTE: This currently runs on the free tier.
+// When accounts/premium exist, gate this behind
+// a premium check before calling extractFromFile().
+// ============================================
+
+const MAX_FILE_SIZE_MB = 8;
+
+if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+fileUpload.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    fileUploadStatus.className = '';
+    fileUploadStatus.textContent = 'Reading file...';
+
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        fileUploadStatus.className = 'upload-error';
+        fileUploadStatus.textContent = `File is too large. Please keep it under ${MAX_FILE_SIZE_MB}MB.`;
+        return;
+    }
+
+    try {
+        let extractedText = '';
+        const fileName = file.name.toLowerCase();
+
+        if (fileName.endsWith('.txt')) {
+            extractedText = await extractFromTxt(file);
+        } else if (fileName.endsWith('.pdf')) {
+            extractedText = await extractFromPdf(file);
+        } else if (fileName.endsWith('.docx')) {
+            extractedText = await extractFromDocx(file);
+        } else {
+            fileUploadStatus.className = 'upload-error';
+            fileUploadStatus.textContent = 'Unsupported file type. Please upload a PDF, DOCX, or TXT file.';
+            return;
+        }
+
+        extractedText = extractedText.trim();
+
+        if (extractedText === '') {
+            fileUploadStatus.className = 'upload-error';
+            fileUploadStatus.textContent = "Couldn't find readable text in this file. It may be scanned or image-based — try pasting your notes manually instead.";
+            return;
+        }
+
+        notes.value = extractedText;
+        notes.dispatchEvent(new Event('input')); // triggers the existing word count update
+
+        const words = extractedText.split(/\s+/).length;
+        fileUploadStatus.className = 'upload-success';
+        fileUploadStatus.textContent = `Loaded "${file.name}" — ${words} words extracted.`;
+
+    } catch (err) {
+        console.error('File extraction error:', err.message);
+        fileUploadStatus.className = 'upload-error';
+        fileUploadStatus.textContent = "Couldn't read that file. Please try a different one or paste your notes manually.";
+    }
+});
+
+function extractFromTxt(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Failed to read text file'));
+        reader.readAsText(file);
+    });
+}
+
+async function extractFromPdf(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items.map(item => item.str).join(' ');
+        fullText += pageText + '\n\n';
+    }
+
+    return fullText;
+}
+
+async function extractFromDocx(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
 }
 
 
