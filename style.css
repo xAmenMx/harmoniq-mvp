@@ -312,6 +312,18 @@ textarea {
     min-height: 16px;
 }
 
+#fileUploadHint {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0.85;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+#fileUploadStatus.upload-warning {
+    color: var(--distracted-text);
+}
+
 #fileUploadStatus.upload-error {
     color: var(--error-color);
 }

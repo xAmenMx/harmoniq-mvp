@@ -141,7 +141,7 @@ sessionTypeBtns.forEach(btn => {
 // same betaCode, but resets naturally the next day.
 // ============================================
 
-const DAILY_LIMIT = 2;
+const DAILY_LIMIT = 3;
 
 // Returns today's date as a simple string, used as the storage key
 function getTodayString() {
@@ -230,12 +230,15 @@ fileUpload.addEventListener('change', async (e) => {
 
     try {
         let extractedText = '';
+        let pdfPageCount = null;
         const fileName = file.name.toLowerCase();
 
         if (fileName.endsWith('.txt')) {
             extractedText = await extractFromTxt(file);
         } else if (fileName.endsWith('.pdf')) {
-            extractedText = await extractFromPdf(file);
+            const pdfResult = await extractFromPdf(file);
+            extractedText = pdfResult.text;
+            pdfPageCount = pdfResult.numPages;
         } else if (fileName.endsWith('.docx')) {
             extractedText = await extractFromDocx(file);
         } else {
@@ -256,8 +259,21 @@ fileUpload.addEventListener('change', async (e) => {
         notes.dispatchEvent(new Event('input')); // triggers the existing word count update
 
         const words = extractedText.split(/\s+/).length;
-        fileUploadStatus.className = 'upload-success';
-        fileUploadStatus.textContent = `Loaded "${file.name}" — ${words} words extracted.`;
+
+        // Heuristic: a text-based PDF page typically holds well over
+        // 15 words. A low words-per-page average usually means most
+        // pages are diagrams, charts, or scanned images with only a
+        // title or caption actually extracted — common in slide decks
+        // exported to PDF. Warn instead of silently under-delivering.
+        const wordsPerPage = pdfPageCount ? words / pdfPageCount : null;
+
+        if (wordsPerPage !== null && wordsPerPage < 15) {
+            fileUploadStatus.className = 'upload-warning';
+            fileUploadStatus.textContent = `Loaded "${file.name}" — but only ${words} words came through across ${pdfPageCount} pages. This often happens with scanned pages or slide decks where content lives in images or diagrams. Please review the notes below before generating.`;
+        } else {
+            fileUploadStatus.className = 'upload-success';
+            fileUploadStatus.textContent = `Loaded "${file.name}" — ${words} words extracted.`;
+        }
 
     } catch (err) {
         console.error('File extraction error:', err.message);
@@ -287,7 +303,7 @@ async function extractFromPdf(file) {
         fullText += pageText + '\n\n';
     }
 
-    return fullText;
+    return { text: fullText, numPages: pdf.numPages };
 }
 
 function extractFromDocx(file) {
