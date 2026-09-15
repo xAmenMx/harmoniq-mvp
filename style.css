@@ -566,6 +566,28 @@ textarea {
     font-size: 0.975rem;
     line-height: 1.8;
     color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+#summarySection p:last-child {
+    margin-bottom: 0;
+}
+
+#summarySection ul,
+#summarySection ol {
+    font-size: 0.975rem;
+    line-height: 1.8;
+    color: var(--text-primary);
+    margin: 4px 0 14px 22px;
+}
+
+#summarySection li {
+    margin-bottom: 4px;
+}
+
+#summarySection ul:last-child,
+#summarySection ol:last-child {
+    margin-bottom: 0;
 }
 
 

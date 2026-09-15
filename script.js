@@ -244,7 +244,7 @@ fileUpload.addEventListener('change', async (e) => {
             return;
         }
 
-        extractedText = extractedText.trim();
+        extractedText = sanitizeExtractedText(extractedText);
 
         if (extractedText === '') {
             fileUploadStatus.className = 'upload-error';
@@ -290,10 +290,36 @@ async function extractFromPdf(file) {
     return fullText;
 }
 
-async function extractFromDocx(file) {
-    const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    return result.value;
+function extractFromDocx(file) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            resolve(result.value);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+// Cleans up text pulled from PDFs/DOCX files. PDF exports (Notion
+// especially) sometimes render checkboxes/toggles/icons using a
+// custom icon font — the extracted "text" for those is a character
+// code that only means something in that font, so it shows as a
+// broken box (□) everywhere else. There's no way to recover the
+// original icon, so we strip it. Real Unicode checkbox characters
+// are converted to plain brackets instead, since those do carry
+// meaning worth keeping.
+function sanitizeExtractedText(text) {
+    return text
+        .replace(/\u2610/g, '[ ]')   // ☐ empty checkbox
+        .replace(/\u2611/g, '[x]')   // ☑ checked checkbox
+        .replace(/\u2612/g, '[x]')   // ☒ checked (X) checkbox
+        .replace(/[\uE000-\uF8FF]/g, '')   // Private Use Area — broken icon-font glyphs
+        .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '') // stray control characters
+        .replace(/[ \t]{2,}/g, ' ')   // collapse leftover repeated spaces/tabs
+        .replace(/\n{3,}/g, '\n\n')  // collapse excessive blank lines
+        .trim();
 }
 
 
@@ -585,7 +611,51 @@ async function generateMaterials() {
 
 
 // ============================================
-// RENDER OUTPUT
+// FORMAT SUMMARY TEXT
+// The AI is instructed to use "- " for bullets
+// and "1. " for numbered lines when the content
+// is genuinely a short list. This converts those
+// plain-text markers into real <ul>/<ol> HTML
+// instead of dumping raw dashes into a paragraph.
+// Plain prose lines become normal <p> paragraphs.
+// ============================================
+
+function formatSummaryText(text) {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+
+    let html = '';
+    let listBuffer = [];
+    let listType = null; // 'ul' or 'ol'
+
+    function flushList() {
+        if (listBuffer.length === 0) return;
+        const tag = listType === 'ol' ? 'ol' : 'ul';
+        html += `<${tag}>` + listBuffer.map(item => `<li>${item}</li>`).join('') + `</${tag}>`;
+        listBuffer = [];
+        listType = null;
+    }
+
+    lines.forEach(line => {
+        const bulletMatch = line.match(/^-\s+(.*)/);
+        const numberedMatch = line.match(/^\d+\.\s+(.*)/);
+
+        if (bulletMatch) {
+            if (listType && listType !== 'ul') flushList();
+            listType = 'ul';
+            listBuffer.push(bulletMatch[1]);
+        } else if (numberedMatch) {
+            if (listType && listType !== 'ol') flushList();
+            listType = 'ol';
+            listBuffer.push(numberedMatch[1]);
+        } else {
+            flushList();
+            html += `<p>${line}</p>`;
+        }
+    });
+
+    flushList();
+    return html;
+}
 // Builds the shared sections (grounding, summary,
 // flashcards), then branches based on session type:
 // Normal gets the reflective questions + a simple
@@ -605,7 +675,7 @@ function renderOutput(data, daysRemaining) {
 
     html += `<div id="summarySection">
         <h2>Summary</h2>
-        <p>${data.summary}</p>
+        ${formatSummaryText(data.summary)}
     </div>`;
 
     html += `<div id="flashcardsSection">
