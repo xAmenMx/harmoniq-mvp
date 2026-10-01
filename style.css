@@ -275,6 +275,30 @@ textarea {
     transition: color 0.2s ease;
 }
 
+#simplifiedNotesRow {
+    margin-top: 10px;
+}
+
+#simplifiedNotesLabel {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--text-secondary);
+    cursor: pointer;
+    line-height: 1.5;
+}
+
+#simplifiedNotesCheckbox {
+    margin-top: 2px;
+    cursor: pointer;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+}
+
 
 /* ============================================
    FILE UPLOAD
@@ -600,6 +624,34 @@ textarea {
 #summarySection ul:last-child,
 #summarySection ol:last-child {
     margin-bottom: 0;
+}
+
+
+/* ============================================
+   SIMPLIFIED NOTES SECTION
+   ============================================ */
+
+#simplifiedNotesSection p {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+#simplifiedNotesSection p:last-child {
+    margin-bottom: 0;
+}
+
+#simplifiedNotesSection ul,
+#simplifiedNotesSection ol {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--text-primary);
+    margin: 4px 0 14px 22px;
+}
+
+#simplifiedNotesSection li {
+    margin-bottom: 5px;
 }
 
 

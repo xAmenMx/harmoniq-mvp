@@ -19,6 +19,7 @@ const examDate = document.querySelector('#examDate');
 const notes = document.querySelector('#notes');
 const fileUpload = document.querySelector('#fileUpload');
 const fileUploadStatus = document.querySelector('#fileUploadStatus');
+const simplifiedNotesCheckbox = document.querySelector('#simplifiedNotesCheckbox');
 const wordCount = document.querySelector('#wordCount');
 const generateBtn = document.querySelector('#generateBtn');
 const formError = document.querySelector('#formError');
@@ -584,7 +585,8 @@ async function generateMaterials() {
         emotionalState: emotionalState,
         sessionType: sessionType,
         daysRemaining: daysRemaining,
-        notes: notes.value
+        notes: notes.value,
+        includeSimplifiedNotes: simplifiedNotesCheckbox.checked
     };
 
     // ----------------------------------------
@@ -693,6 +695,13 @@ function renderOutput(data, daysRemaining) {
         <h2>Summary</h2>
         ${formatSummaryText(data.summary)}
     </div>`;
+
+    if (data.simplifiedNotes && data.simplifiedNotes.trim() !== '') {
+        html += `<div id="simplifiedNotesSection">
+            <h2>Simplified Notes</h2>
+            ${formatSummaryText(data.simplifiedNotes)}
+        </div>`;
+    }
 
     html += `<div id="flashcardsSection">
         <h2>Flashcards</h2>`;
